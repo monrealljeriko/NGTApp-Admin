@@ -3,14 +3,13 @@ import "./sidebar.scss";
 import { Link, useLocation } from "react-router-dom";
 import { images } from "../../constants";
 import sidebarNav from "../../configs/sidebarNav";
-import { useNavigate } from "react-router-dom"; // Import useNavigate
-
 import { FIREBASE_AUTH } from "../../configs/firebaseConfig";
+import { Modal } from "antd";
 
 const Sidebar = () => {
   const [activeIndex, setActiveIndex] = useState(0);
   const location = useLocation();
-  const navigate = useNavigate(); // Initialize navigate
+  const [isModalVisible, setIsModalVisible] = useState(false);
 
   useEffect(() => {
     const curPath = window.location.pathname.split("/")[1];
@@ -37,6 +36,24 @@ const Sidebar = () => {
     }
   };
 
+  // Function to handle the modal's visibility
+  const showModal = () => {
+    setIsModalVisible(true);
+  };
+
+  // Function to handle the modal's cancel action
+  const handleCancel = () => {
+    setIsModalVisible(false);
+  };
+
+  // Function to handle the modal's OK action
+  const handleOk = () => {
+    // Perform the action you want when the user clicks OK
+    // For example, display a success message or submit a form
+    handleSignOut();
+    setIsModalVisible(false);
+  };
+
   return (
     <div className="sidebar">
       <div className="sidebar__logo">
@@ -59,13 +76,28 @@ const Sidebar = () => {
             <div className="sidebar__menu__item__txt">{nav.text}</div>
           </Link>
         ))}
-        <div className="sidebar__menu__item" onClick={() => handleSignOut()}>
+        <div className="sidebar__menu__item" onClick={() => showModal()}>
           <div className="sidebar__menu__item__icon">
             <i className="bx bx-log-out"></i>
           </div>
           <div className="sidebar__menu__item__txt">Logout</div>
         </div>
       </div>
+      <Modal
+        title="Are you sure want to log out"
+        open={isModalVisible}
+        width={300}
+        centered
+        okButtonProps={{
+          style: {
+            backgroundColor: "#57708c",
+            borderColor: "#57708c",
+          },
+        }}
+        okText="Confirm"
+        onOk={handleOk}
+        onCancel={handleCancel}
+      ></Modal>
     </div>
   );
 };

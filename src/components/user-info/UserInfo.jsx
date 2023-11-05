@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import "./user-info.scss";
-import { Dropdown, Button, Menu, Modal } from "antd";
+import { Dropdown, Modal } from "antd";
 
 const UserInfo = ({ user }) => {
   const [notificationVisible, setNotificationVisible] = useState(false);

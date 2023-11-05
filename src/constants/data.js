@@ -1,4 +1,6 @@
+import React, { useEffect, useState } from "react";
 import images from "./images";
+import { FIREBASE_DB } from "../configs/firebaseConfig";
 
 const data = {
   user: {

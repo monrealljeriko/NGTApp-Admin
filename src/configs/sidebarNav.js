@@ -1,3 +1,5 @@
+import { Icon } from "@iconify/react";
+
 const sidebarNav = [
   {
     link: "/",
@@ -16,6 +18,16 @@ const sidebarNav = [
     section: "loans",
     icon: <i className="bx bx-collection"></i>,
     text: "Loans",
+  },
+  {
+    link: "/duedate",
+    section: "duedate",
+    icon: (
+      <Icon icon="tabler:calendar" style={{ fontSize: 35 }}>
+        {" "}
+      </Icon>
+    ),
+    text: "Duedates",
   },
   {
     link: "/register",

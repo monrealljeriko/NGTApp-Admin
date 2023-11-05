@@ -112,7 +112,7 @@ const Members = () => {
   return (
     <>
       <div className="text"> Credits and Share Capital</div>
-      <Tabs defaultActiveKey="2" onChange={onChange}>
+      <Tabs defaultActiveKey="1" onChange={onChange}>
         {items.map((item) => (
           <Tabs.TabPane tab={item.label} key={item.key}>
             {item.content}

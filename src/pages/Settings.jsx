@@ -1,25 +1,68 @@
 import React, { useState } from "react";
-import { Button, Modal, Form, Input } from "antd";
+import { Modal, Form, Input, message } from "antd";
+import { Spin } from "antd";
+import {
+  getAuth,
+  updatePassword,
+  signInWithEmailAndPassword,
+} from "firebase/auth";
 import { useNavigate } from "react-router-dom"; // Import useNavigate
 
-const App = () => {
-  const [isModalOpen, setIsModalOpen] = useState(true); // Set initial state to false
-  const navigate = useNavigate(); // Initialize navigate
-  const onFinish = (values) => {
-    console.log("Success:", values);
-  };
-  const onFinishFailed = (errorInfo) => {
-    console.log("Failed:", errorInfo);
+const Settings = () => {
+  const [isModalOpen, setIsModalOpen] = useState(true);
+  const [currentPassword, setCurrentPassword] = useState("");
+  const [newPassword, setNewPassword] = useState("");
+  const [confirmPassword, setConfirmPassword] = useState("");
+  const [loading, setLoading] = useState(false);
+  const auth = getAuth();
+
+  const navigate = useNavigate();
+
+  const updatePasswordAsync = async (currentPassword, newPassword) => {
+    try {
+      const user = auth.currentUser;
+      // Sign in the user with their current password before updating the password
+      await signInWithEmailAndPassword(auth, user.email, currentPassword);
+      // Update the password
+      await updatePassword(user, newPassword);
+      return { success: true };
+    } catch (error) {
+      return { success: false, error };
+    }
   };
 
-  const handleOk = () => {
-    /*  setIsModalOpen(false);
-    navigate("/"); */
-    // Redirect to the dashboard or any desired route using navigate
-  };
+  const handlePasswordUpdate = async () => {
+    setLoading(true);
 
+    if (!currentPassword || !newPassword || !confirmPassword) {
+      message.error("Please fill in all the required fields.");
+    } else if (newPassword !== confirmPassword) {
+      message.error("New passwords do not match.");
+    } else if (confirmPassword.length < 6 || newPassword.length < 6) {
+      message.error("Password must be at least 6 characters long.");
+    } else if (
+      confirmPassword === currentPassword ||
+      newPassword === currentPassword
+    ) {
+      message.error("Password already in use.");
+    } else {
+      const result = await updatePasswordAsync(currentPassword, newPassword);
+
+      if (result.success) {
+        // Password update was successful
+        message.success("Password updated successfully.");
+        setIsModalOpen(false);
+        navigate("/members");
+      } else {
+        // Password update failed
+        message.error("Current password does not match.");
+      }
+    }
+
+    setLoading(false); // Set loading to false
+  };
   const handleCancel = () => {
-    navigate("/"); // Redirect to the dashboard or any desired route using navigate
+    navigate("/");
 
     setIsModalOpen(false);
   };
@@ -28,75 +71,77 @@ const App = () => {
     <Modal
       title="Update Admin Account"
       open={isModalOpen}
-      onOk={handleOk}
+      onOk={() => handlePasswordUpdate()}
       onCancel={handleCancel}
-      okText="Udpate"
+      okText="Update"
       okButtonProps={{
         style: {
-          backgroundColor: "#57708c",
-          borderColor: "#57708c",
+          backgroundColor:
+            !currentPassword || !newPassword || !confirmPassword
+              ? ""
+              : "#57708c",
+          borderColor:
+            !currentPassword || !newPassword || !confirmPassword
+              ? ""
+              : "#57708c",
           marginRight: 25,
         },
+        disabled: !currentPassword || !newPassword || !confirmPassword,
       }}
       centered
     >
-      <Form
-        name="basic"
-        labelCol={{
-          span: 8,
-        }}
-        wrapperCol={{
-          span: 16,
-        }}
-        style={{ marginTop: 20 }}
-        initialValues={{
-          remember: true,
-        }}
-        onFinish={onFinish}
-        onFinishFailed={onFinishFailed}
-        autoComplete="off"
-      >
-        <Form.Item
-          label="Current Password"
-          name="password"
-          //  rules={[
-          //    {
-          //      required: true,
-          //      message: "Please input your username!",
-          //    },
-          //  ]}
+      {loading ? (
+        <div
+          style={{
+            display: "flex",
+            justifyContent: "center",
+            alignItems: "center",
+          }}
         >
-          <Input />
-        </Form.Item>
+          <Spin size="middle" />
+        </div>
+      ) : (
+        <Form
+          name="basic"
+          labelCol={{
+            span: 8,
+          }}
+          wrapperCol={{
+            span: 16,
+          }}
+          style={{ marginTop: 20 }}
+          autoComplete="off"
+        >
+          <Form.Item label="Current Password" name="current">
+            <Input.Password
+              value={currentPassword}
+              required
+              placeholder="Enter current password"
+              onChangeCapture={(e) => setCurrentPassword(e.target.value)}
+            />
+          </Form.Item>
 
-        <Form.Item
-          label="Password"
-          name="password"
-          //  rules={[
-          //    {
-          //      required: true,
-          //      message: "Please input your username!",
-          //    },
-          //  ]}
-        >
-          <Input />
-        </Form.Item>
+          <Form.Item label="New Password" name="new">
+            <Input.Password
+              value={newPassword}
+              required
+              placeholder="Enter Email or username"
+              onChangeCapture={(e) => setNewPassword(e.target.value)}
+            />
+          </Form.Item>
 
-        <Form.Item
-          label="New Password"
-          name="password"
-          //  rules={[
-          //    {
-          //      required: true,
-          //      message: "Please input your password!",
-          //    },
-          //  ]}
-        >
-          <Input.Password />
-        </Form.Item>
-      </Form>
+          <Form.Item label="Password" name="confirm">
+            <Input.Password
+              value={confirmPassword}
+              required
+              placeholder="Enter password "
+              onChangeCapture={(e) => setConfirmPassword(e.target.value)}
+            />
+          </Form.Item>
+        </Form>
+      )}
     </Modal>
   );
 };
 
-export default App;
+export default Settings;

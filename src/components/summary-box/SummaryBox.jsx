@@ -38,7 +38,8 @@ const SummaryBox = ({ item }) => {
             <span>{item.subtitle}</span>
           </div>
           <div className="summary-box__info__value" style={{}}>
-            {item.value}
+            {item.title === "Loans" && "₱"}
+            {item.title === "Revenue" && "₱"} {item.value}
           </div>
         </div>
         <div className="summary-box__chart">

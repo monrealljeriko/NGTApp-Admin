@@ -1,18 +1,19 @@
 import React from "react";
 import "./overall-list.scss";
-import { data } from "../../constants";
+import { Icon } from "@iconify/react";
+
+// import { data } from "../../constants";
 
 const icons = [
   <i className="bx bx-collection"></i>,
   <i className="bx bx-user"></i>,
-  <i className="bx bx-dollar"></i>,
-  <i className="bx bx-dollar"></i>,
+  <Icon icon="mdi:hand-coin" />,
 ];
 
-const OverallList = () => {
+const OverallList = ({ itemLeft }) => {
   return (
     <ul className="overall-list">
-      {data.overall.map((item, index) => (
+      {itemLeft.overall.map((item, index) => (
         <li className="overall-list__item" key={`overall-${index}`}>
           <div className="overall-list__item__icon">{icons[index]}</div>
           <div className="overall-list__item__info">
