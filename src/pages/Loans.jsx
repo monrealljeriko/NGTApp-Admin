@@ -1,5 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { Tabs, Table, Button, Modal, List, message, Spin } from "antd";
+import { ReloadOutlined } from "@ant-design/icons";
+
 import {
   collection,
   query,
@@ -79,6 +81,7 @@ const Loans = () => {
   };
 
   const fetchFirestoreData = async () => {
+    setIsUpdating(true);
     const borrowersCollection = collection(FIREBASE_DB, "borrowers");
 
     try {
@@ -115,6 +118,7 @@ const Loans = () => {
       setActiveData(active);
       setCompletedData(completed);
       setAllData(borrowerDataLoan);
+      setIsUpdating(false);
     } catch (error) {
       console.error("Error querying the borrowers collection: ", error);
     }
@@ -192,7 +196,18 @@ const Loans = () => {
     {
       key: "1",
       label: "Pending",
-      content: (
+      content: isUpdating ? (
+        <div
+          style={{
+            display: "flex",
+            justifyContent: "center",
+            alignItems: "center",
+            height: "100px",
+          }}
+        >
+          <Spin size="middle">Loading, plese wait.</Spin>
+        </div>
+      ) : (
         <Table
           columns={columns}
           dataSource={pendingData.map((item) => ({
@@ -200,7 +215,7 @@ const Loans = () => {
             key: item.loanID,
           }))}
           scroll={{
-            y: 350,
+            y: 340,
           }}
         />
       ),
@@ -208,7 +223,18 @@ const Loans = () => {
     {
       key: "2",
       label: "Active",
-      content: (
+      content: isUpdating ? (
+        <div
+          style={{
+            display: "flex",
+            justifyContent: "center",
+            alignItems: "center",
+            height: "100px",
+          }}
+        >
+          <Spin size="middle">Loading, plese wait.</Spin>
+        </div>
+      ) : (
         <Table
           columns={columns}
           dataSource={activeData.map((item) => ({
@@ -216,7 +242,7 @@ const Loans = () => {
             key: item.loanID,
           }))}
           scroll={{
-            y: 350,
+            y: 340,
           }}
         />
       ),
@@ -224,7 +250,18 @@ const Loans = () => {
     {
       key: "3",
       label: "Completed",
-      content: (
+      content: isUpdating ? (
+        <div
+          style={{
+            display: "flex",
+            justifyContent: "center",
+            alignItems: "center",
+            height: "100px",
+          }}
+        >
+          <Spin size="middle">Loading, plese wait.</Spin>
+        </div>
+      ) : (
         <Table
           columns={columns}
           dataSource={completedData.map((item) => ({
@@ -232,7 +269,7 @@ const Loans = () => {
             key: item.loanID,
           }))}
           scroll={{
-            y: 350,
+            y: 340,
           }}
         />
       ),
@@ -240,12 +277,23 @@ const Loans = () => {
     {
       key: "4",
       label: "All",
-      content: (
+      content: isUpdating ? (
+        <div
+          style={{
+            display: "flex",
+            justifyContent: "center",
+            alignItems: "center",
+            height: "100px",
+          }}
+        >
+          <Spin size="middle">Loading, plese wait.</Spin>
+        </div>
+      ) : (
         <Table
           columns={columns}
           dataSource={allData.map((item) => ({ ...item, key: item.loanID }))}
           scroll={{
-            y: 350,
+            y: 340,
           }}
         />
       ),
@@ -292,7 +340,7 @@ const Loans = () => {
                 height: "100px",
               }}
             >
-              <Spin size="large" />
+              <Spin size="large">Loading, plese wait.</Spin>
             </div>
           ) : (
             <div style={{ display: "flex", flexDirection: "row" }}>
@@ -349,7 +397,20 @@ const Loans = () => {
           )}
         </Modal>
       )}
-      <div className="text">Member Loans</div>
+
+      <div
+        style={{
+          display: "flex",
+          flexDirection: "row",
+          justifyContent: "space-between",
+        }}
+      >
+        <div className="text">Member Loans</div>
+        <Button type="default" onClick={() => fetchFirestoreData()}>
+          <ReloadOutlined style={{ marginRight: 10 }} />
+          Refresh
+        </Button>
+      </div>
       <Tabs defaultActiveKey="2">
         {items.map((item) => (
           <Tabs.TabPane tab={item.label} key={item.key}>

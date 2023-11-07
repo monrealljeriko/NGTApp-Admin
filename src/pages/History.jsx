@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from "react";
-import { Tabs, Table, Button, List, Modal } from "antd";
+import { ReloadOutlined } from "@ant-design/icons";
+import { Tabs, Table, Button, List, Modal, Spin } from "antd";
 import { collection, query, getDocs } from "firebase/firestore";
 import { FIREBASE_DB } from "../configs/firebaseConfig";
 
@@ -7,6 +8,7 @@ const History = () => {
   const [completedData, setCompletedData] = useState([]);
   const [isModalOpen, setIsModalOpen] = useState(false); // Set initial state to false
   const [selectedRowData, setSelectedRowData] = useState(null);
+  const [isUpdating, setIsUpdating] = useState(false);
 
   useEffect(() => {
     fetchFirestoreData();
@@ -79,6 +81,7 @@ const History = () => {
   };
 
   const fetchFirestoreData = async () => {
+    setIsUpdating(true);
     const borrowersCollection = collection(FIREBASE_DB, "borrowers");
 
     try {
@@ -107,6 +110,7 @@ const History = () => {
       );
       console.log("completed", completed);
       setCompletedData(completed);
+      setIsUpdating(false);
     } catch (error) {
       console.error("Error querying the borrowers collection: ", error);
     }
@@ -188,16 +192,43 @@ const History = () => {
           </div>
         </Modal>
       )}
-      <div className="text" style={{ marginBottom: 10 }}>
-        History
-      </div>
-      <Table
-        columns={columns}
-        dataSource={completedData}
-        scroll={{
-          y: 400,
+      <div
+        style={{
+          display: "flex",
+          flexDirection: "row",
+          justifyContent: "space-between",
+          marginBottom: 10,
         }}
-      />
+      >
+        <div className="text" style={{ marginBottom: 10 }}>
+          History
+        </div>
+        <Button type="default" onClick={() => fetchFirestoreData()}>
+          <ReloadOutlined style={{ marginRight: 10 }} />
+          Refresh
+        </Button>
+      </div>
+
+      {isUpdating ? (
+        <div
+          style={{
+            display: "flex",
+            justifyContent: "center",
+            alignItems: "center",
+            height: "100px",
+          }}
+        >
+          <Spin size="middle">Loading, plese wait.</Spin>
+        </div>
+      ) : (
+        <Table
+          columns={columns}
+          dataSource={completedData}
+          scroll={{
+            y: 400,
+          }}
+        />
+      )}
     </>
   );
 };

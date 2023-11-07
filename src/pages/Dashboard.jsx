@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { Bar } from "react-chartjs-2";
+import { Spin } from "antd";
 import Box from "../components/box/Box";
 import { Icon } from "@iconify/react";
 import DashboardWrapper, {
@@ -44,6 +45,8 @@ const Dashboard = () => {
   const [MonhtlyRevenueSum, setMonthlyRevenueSum] = useState("");
   const [activeMembers, setActiveMembers] = useState(0);
   const [totalMembers, setTotalMembers] = useState(0);
+  const [loanable, setLoanable] = useState("");
+  const [laoding, setLoading] = useState(false);
 
   const summaryData = {
     summary: [
@@ -82,7 +85,7 @@ const Dashboard = () => {
         title: "Members",
       },
       {
-        value: "95K",
+        value: loanable,
         title: "Loanable Amount",
       },
     ],
@@ -135,10 +138,16 @@ const Dashboard = () => {
   };
 
   const fetchLoanData = async () => {
+    setLoading(true);
     const borrowersCollection = collection(FIREBASE_DB, "borrowers");
+    const adminData = collection(FIREBASE_DB, "data");
 
     try {
       const querySnapshot = await getDocs(borrowersCollection);
+      const adminSnapshot = await getDocs(adminData);
+      const loanAmt = adminSnapshot.docs.map(
+        (doc) => doc.data().loanableAmount
+      );
       const borrowerDataLoan = [];
 
       for (const borrowerDoc of querySnapshot.docs) {
@@ -241,13 +250,14 @@ const Dashboard = () => {
       //   const loanAmount = parseFloat(loan.loanAmount) || 0;
       //   return accumulator + loanAmount;
       // }, 0);
-
+      const formattedloanAmount = formatNumber(loanAmt);
       const formattedActiveLoanSum = formatNumber(totalActiveLoanAmount);
       const formattedCompletedLoanSum = formatNumber(totalCompletedLoanAmount);
       const formattedRevenueLoanAmount = formatNumber(totalRevenueLoanAmount);
       const formattedtotalDailyRevenue = formatNumber(totalDailyRevenue);
       const formattedtotalWeeklyRevenue = formatNumber(totalWeeklyRevenue);
       const formattedtotalMonthlyRevenue = formatNumber(totalMonthlyRevenue);
+      setLoanable(formattedloanAmount);
       setActiveLoanSum(formattedActiveLoanSum);
       setCompletedLoanSum(formattedCompletedLoanSum);
       setTotalRevenueSum(formattedRevenueLoanAmount);
@@ -257,6 +267,7 @@ const Dashboard = () => {
     } catch (error) {
       console.error("Error querying the borrowers collection: ", error);
     }
+    setLoading(false);
   };
 
   const fetchMemberData = async () => {
@@ -285,31 +296,45 @@ const Dashboard = () => {
   return (
     <DashboardWrapper>
       <DashboardWrapperMain>
-        <div className="row">
-          <div className="col col-md-12">
-            <div className="row">
-              {summaryData.summary.map((item, index) => (
-                <div
-                  key={`summary-${index}`}
-                  className="col-6 col-md-6 col-sm-12 mb"
-                >
-                  <SummaryBox item={item} />
-                </div>
-              ))}
-            </div>
+        {laoding ? (
+          <div
+            style={{
+              display: "flex",
+              justifyContent: "center",
+              alignItems: "center",
+              height: "100px",
+            }}
+          >
+            <Spin size="large">Loading, plese wait.</Spin>
           </div>
+        ) : (
+          <div className="row">
+            <div className="col col-md-12">
+              <div className="row">
+                {summaryData.summary.map((item, index) => (
+                  <div
+                    key={`summary-${index}`}
+                    className="col-6 col-md-6 col-sm-12 mb"
+                  >
+                    <SummaryBox item={item} />
+                  </div>
+                ))}
+              </div>
+            </div>
 
-          {/*  <div className="col-4 hide-md">
+            {/*  <div className="col-4 hide-md">
             <SummaryBoxSpecial item={data.revenueSummary} />
           </div> */}
-        </div>
-        <div className="row">
+          </div>
+        )}
+
+        {/* <div className="row">
           <div className="col-12">
             <Box>
               <RevenueByMonthsChart />
             </Box>
           </div>
-        </div>
+        </div> */}
       </DashboardWrapperMain>
       <DashboardWrapperRight>
         <div
@@ -323,9 +348,23 @@ const Dashboard = () => {
           <div className="title mb">Overall</div>
           <i className="bx bx-layer" style={{ fontSize: 30 }}></i>
         </div>
-        <div className="mb">
-          <OverallList itemLeft={summaryData} />
-        </div>
+        {laoding ? (
+          <div
+            style={{
+              display: "flex",
+              justifyContent: "center",
+              alignItems: "center",
+              height: "100px",
+              marginBottom: 40,
+            }}
+          >
+            <Spin size="middle">Loading, plese wait.</Spin>
+          </div>
+        ) : (
+          <div className="mb">
+            <OverallList itemLeft={summaryData} />
+          </div>
+        )}
         <div
           className="row"
           style={{
@@ -337,9 +376,23 @@ const Dashboard = () => {
           <div className="title mb">Revenue</div>
           <i className="bx bx-analyse" style={{ fontSize: 30 }}></i>
         </div>
-        <div className="mb">
-          <RevenueList itemLeft={summaryData} />
-        </div>
+        {laoding ? (
+          <div
+            style={{
+              display: "flex",
+              justifyContent: "center",
+              alignItems: "center",
+              height: "100px",
+              marginBottom: 40,
+            }}
+          >
+            <Spin size="middle">Loading, plese wait.</Spin>
+          </div>
+        ) : (
+          <div className="mb">
+            <RevenueList itemLeft={summaryData} />
+          </div>
+        )}
       </DashboardWrapperRight>
     </DashboardWrapper>
   );

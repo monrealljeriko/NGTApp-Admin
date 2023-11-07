@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { Tabs, Table, Button, Modal, List, message, Spin } from "antd";
 import { collection, getDocs, doc, updateDoc } from "firebase/firestore";
+import { ReloadOutlined } from "@ant-design/icons";
 import { FIREBASE_DB } from "../configs/firebaseConfig";
 
 const Members = () => {
@@ -66,6 +67,7 @@ const Members = () => {
   }, []);
 
   const fetchFirestoreData = async () => {
+    setIsUpdating(true);
     const memberRegisterCollection = collection(FIREBASE_DB, "memberRegister");
     try {
       const querySnapshot = await getDocs(memberRegisterCollection);
@@ -84,6 +86,7 @@ const Members = () => {
     } catch (error) {
       console.error("Error querying the memberRegister collection: ", error);
     }
+    setIsUpdating(false);
   };
   const handleShow = (rowData) => {
     setSelectedRowData(rowData); // Set the selected row data
@@ -117,7 +120,18 @@ const Members = () => {
     {
       key: "1",
       label: "Pending",
-      content: (
+      content: isUpdating ? (
+        <div
+          style={{
+            display: "flex",
+            justifyContent: "center",
+            alignItems: "center",
+            height: "100px",
+          }}
+        >
+          <Spin size="middle">Loading, plese wait.</Spin>
+        </div>
+      ) : (
         <Table
           columns={columns}
           dataSource={pendingData.map((item) => ({
@@ -133,7 +147,18 @@ const Members = () => {
     {
       key: "2",
       label: "Members",
-      content: (
+      content: isUpdating ? (
+        <div
+          style={{
+            display: "flex",
+            justifyContent: "center",
+            alignItems: "center",
+            height: "100px",
+          }}
+        >
+          <Spin size="middle">Loading, plese wait.</Spin>
+        </div>
+      ) : (
         <Table
           columns={columns}
           dataSource={membersData.map((item) => ({
@@ -149,7 +174,18 @@ const Members = () => {
     {
       key: "3",
       label: "All",
-      content: (
+      content: isUpdating ? (
+        <div
+          style={{
+            display: "flex",
+            justifyContent: "center",
+            alignItems: "center",
+            height: "100px",
+          }}
+        >
+          <Spin size="middle" />
+        </div>
+      ) : (
         <Table
           columns={columns}
           dataSource={allData.map((item) => ({
@@ -194,7 +230,7 @@ const Members = () => {
                 height: "100px",
               }}
             >
-              <Spin size="large" />
+              <Spin size="large">Loading, plese wait.</Spin>
             </div>
           ) : (
             <div style={{ display: "flex", flexDirection: "row" }}>
@@ -340,7 +376,19 @@ const Members = () => {
           )}
         </Modal>
       )}
-      <div className="text">Member Lists</div>
+      <div
+        style={{
+          display: "flex",
+          flexDirection: "row",
+          justifyContent: "space-between",
+        }}
+      >
+        <div className="text">Member Lists</div>
+        <Button type="default" onClick={() => fetchFirestoreData()}>
+          <ReloadOutlined style={{ marginRight: 10 }} />
+          Refresh
+        </Button>
+      </div>
       <Tabs defaultActiveKey="2">
         {items.map((item) => (
           <Tabs tab={item.label} key={item.key}>
