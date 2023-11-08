@@ -34,7 +34,7 @@ const Loans = () => {
     {
       title: "Name",
       dataIndex: "name",
-      width: 150,
+      width: 180,
     },
     {
       title: "Amount",
@@ -132,8 +132,32 @@ const Loans = () => {
     return `${month}/${day}/${year}`;
   };
 
+  const Message = {
+    sound: "default",
+    title: "Loan Status",
+    body: "Your loan has been approved! Check your app to see your schedyu.",
+  };
+
+  const sendNotif = async (expoToken) => {
+    Message.to = expoToken;
+    await fetch("https://exp.host/--/api/v2/push/send", {
+      mode: "no-cors",
+      method: "POST",
+      headers: {
+        Accept: "application/json",
+        "Accept-encoding": "gzip, deflate",
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify(Message),
+    });
+  };
+
   // Define a function to update the status to "Active"
-  const updateLoanStatusToActive = async (borrowerId, loanRequestId) => {
+  const updateLoanStatusToActive = async (
+    borrowerId,
+    loanRequestId,
+    tokenRequestId
+  ) => {
     setIsUpdating(true);
     const db = FIREBASE_DB; // Use your Firestore database instance
     const loanRequestRef = doc(
@@ -177,16 +201,22 @@ const Loans = () => {
         `Loan with ID ${loanRequestId} has been successfully approved.`
       );
       setIsModalOpen(false);
+      try {
+        await sendNotif(tokenRequestId);
+      } catch (error) {
+        message.error("Error Acknowledging the Payments");
+      }
       fetchFirestoreData();
     } catch (error) {
       console.error("Error updating loan status:", error);
     }
   };
 
-  const handleOk = (accID, loanID) => {
+  const handleOk = (accID, loanID, tokenID) => {
     const borrowerId = accID;
     const loanRequestId = loanID;
-    updateLoanStatusToActive(borrowerId, loanRequestId);
+    const tokenRequestId = tokenID;
+    updateLoanStatusToActive(borrowerId, loanRequestId, tokenRequestId);
   };
 
   const handleCancel = () => {
@@ -306,7 +336,11 @@ const Loans = () => {
           title="Loan Details"
           open={isModalOpen}
           onOk={() =>
-            handleOk(selectedRowData.accountID, selectedRowData.loanID)
+            handleOk(
+              selectedRowData.accountID,
+              selectedRowData.loanID,
+              selectedRowData.tokenID
+            )
           }
           onCancel={handleCancel}
           okText={

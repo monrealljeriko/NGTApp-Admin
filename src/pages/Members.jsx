@@ -23,7 +23,7 @@ const Members = () => {
       key: "2",
       title: "Name",
       dataIndex: "fullName",
-      width: 100,
+      width: 160,
     },
     {
       key: "3",
@@ -35,7 +35,7 @@ const Members = () => {
       key: "4",
       title: "Email ",
       dataIndex: "emailAddress",
-      width: 150,
+      width: 170,
     },
     {
       key: "5",
@@ -93,8 +93,28 @@ const Members = () => {
     setIsModalOpen(true);
   };
 
+  const Message = {
+    sound: "default",
+    title: "Membership Status",
+    body: "Your application has been approved! Your account will be provided by admin.",
+  };
+
+  const sendNotif = async (expoToken) => {
+    Message.to = expoToken;
+    await fetch("https://exp.host/--/api/v2/push/send", {
+      mode: "no-cors",
+      method: "POST",
+      headers: {
+        Accept: "application/json",
+        "Accept-encoding": "gzip, deflate",
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify(Message),
+    });
+  };
+
   // Define a function to update the status to "Active"
-  const updateMembershipStatus = async (memberId) => {
+  const updateMembershipStatus = async (memberId, tokenID) => {
     setIsUpdating(true);
     const db = FIREBASE_DB;
     const memberRef = doc(db, `memberRegister/${memberId}`);
@@ -106,6 +126,11 @@ const Members = () => {
         `Member with ID ${memberId} has been successfully approved.`
       );
       setIsModalOpen(false);
+      try {
+        await sendNotif(tokenID);
+      } catch (error) {
+        message.error("Error Acknowledging the Payments");
+      }
       fetchFirestoreData();
     } catch (error) {
       console.error("Error updating member status:", error);
@@ -206,7 +231,12 @@ const Members = () => {
         <Modal
           title="Member Details"
           open={isModalOpen}
-          onOk={() => updateMembershipStatus(selectedRowData.registerID)}
+          onOk={() =>
+            updateMembershipStatus(
+              selectedRowData.registerID,
+              selectedRowData.tokenID
+            )
+          }
           onCancel={handleCancel}
           okText={selectedRowData.status === "Member" ? "Member" : "Approve"}
           okButtonProps={{

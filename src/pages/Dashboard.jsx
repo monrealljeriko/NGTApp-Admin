@@ -60,7 +60,7 @@ const Dashboard = () => {
         title: "Members",
         subtitle: "Active members",
         icon: <i className="bx bx-user-check" style={{ fontSize: 38 }}></i>,
-        value: activeMembers,
+        value: 10,
       },
       {
         title: "Revenue",
@@ -72,7 +72,7 @@ const Dashboard = () => {
         title: "Non Payee",
         subtitle: "Non paying members",
         icon: <i className="bx bx-user-x" style={{ fontSize: 38 }}></i>,
-        value: 20,
+        value: 2,
       },
     ],
     overall: [
@@ -81,7 +81,7 @@ const Dashboard = () => {
         title: "Overall Loans",
       },
       {
-        value: activeMembers,
+        value: 10,
         title: "Members",
       },
       {
@@ -193,63 +193,7 @@ const Dashboard = () => {
         borrowerDataLoan,
         (item) => item.status === "Completed"
       );
-      // const active = borrowerDataLoan.filter(
-      //   (item) => item.status === "Active"
-      // );
-      // const completed = borrowerDataLoan.filter(
-      //   (item) => item.status === "Completed"
-      // );
-      // const revenueDaily = borrowerDataLoan.filter(
-      //   (item) => item.numberOfPayments === "Daily"
-      // );
-      // const revenueWeekly = borrowerDataLoan.filter(
-      //   (item) => item.numberOfPayments === "Weekly"
-      // );
-      // const revenueMonthly = borrowerDataLoan.filter(
-      //   (item) => item.numberOfPayments === "Monthly"
-      // );
 
-      // // Calculate the sum of active loanAmount
-      // const totalActiveLoanAmount = active.reduce((accumulator, loan) => {
-      //   const loanAmount = parseFloat(loan.loanAmount) || 0;
-      //   return accumulator + loanAmount;
-      // }, 0);
-
-      // // Calculate the sum of revenue loanAmount
-      // const totalRevenueLoanAmount = completed.reduce(
-      //   (accumulator, revenue) => {
-      //     const loanAmount = parseFloat(revenue.totalDeductionCharge) || 0;
-      //     return accumulator + loanAmount;
-      //   },
-      //   0
-      // );
-      // // daily
-      // const totalDailyRevenue = revenueDaily.reduce((accumulator, revenue) => {
-      //   const loanAmount = parseFloat(revenue.totalDeductionCharge) || 0;
-      //   return accumulator + loanAmount;
-      // }, 0);
-      // // weekly
-      // const totalWeeklyRevenue = revenueWeekly.reduce(
-      //   (accumulator, revenue) => {
-      //     const loanAmount = parseFloat(revenue.totalDeductionCharge) || 0;
-      //     return accumulator + loanAmount;
-      //   },
-      //   0
-      // );
-      // // monthly
-      // const totalMonthlyRevenue = revenueMonthly.reduce(
-      //   (accumulator, revenue) => {
-      //     const loanAmount = parseFloat(revenue.totalDeductionCharge) || 0;
-      //     return accumulator + loanAmount;
-      //   },
-      //   0
-      // );
-
-      // // Calculate the sum of complted loanAmount
-      // const totalCompletedLoanAmount = completed.reduce((accumulator, loan) => {
-      //   const loanAmount = parseFloat(loan.loanAmount) || 0;
-      //   return accumulator + loanAmount;
-      // }, 0);
       const formattedloanAmount = formatNumber(loanAmt);
       const formattedActiveLoanSum = formatNumber(totalActiveLoanAmount);
       const formattedCompletedLoanSum = formatNumber(totalCompletedLoanAmount);

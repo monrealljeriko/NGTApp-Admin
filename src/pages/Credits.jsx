@@ -1,81 +1,78 @@
-import React from "react";
+import React, { useEffect, useState } from "react";
 import { Tabs, Table, Space } from "antd";
-
-const columnsCredits = [
-  {
-    title: "Name",
-    dataIndex: "name",
-    width: 100,
-  },
-  {
-    title: "Min Score",
-    dataIndex: "min_score",
-    width: 100,
-  },
-  {
-    title: "Max Score",
-    dataIndex: "max_score",
-    width: 100,
-  },
-  {
-    title: "Available",
-    dataIndex: "available",
-    width: 100,
-  },
-
-  {
-    title: "Status",
-    dataIndex: "status",
-    width: 100,
-  },
-  {
-    title: "Action",
-    key: "operation",
-    width: 150,
-    render: () => <a> Reset </a>,
-  },
-];
-const columnsShare = [
-  {
-    title: "Name",
-    dataIndex: "name",
-    width: 100,
-  },
-  {
-    title: "Min Share",
-    dataIndex: "min_share",
-    width: 100,
-  },
-  {
-    title: "Max Share",
-    dataIndex: "max_share",
-    width: 100,
-  },
-  {
-    title: "Available",
-    dataIndex: "available",
-    width: 100,
-  },
-];
-const dataCredits = [
-  {
-    name: "John Brown",
-    min_score: 500,
-    max_score: 600,
-    available: 600,
-    status: "Good",
-  },
-];
-const dataShare = [
-  {
-    name: "Lee Brown",
-    min_share: 30000,
-    max_share: 40000,
-    available: 600,
-  },
-];
+import { FIREBASE_DB } from "../configs/firebaseConfig";
+import { collection, getDocs, query, where } from "firebase/firestore";
 
 const Members = () => {
+  const [credits, setCredits] = useState([]);
+  const [memberName, sertMemberName] = useState([]);
+  const [combinedData, setCombinedData] = useState([]);
+  const columnsCredits = [
+    {
+      title: "Name",
+      dataIndex: "fullName",
+      width: 100,
+    },
+    {
+      title: "Available",
+      dataIndex: "creditScore", // Use "creditScore" as the dataIndex
+      width: 100,
+    },
+
+    {
+      title: "Action",
+      key: "operation",
+      width: 150,
+      render: () => <a>Reset</a>,
+    },
+  ];
+
+  const columnsShare = [
+    {
+      title: "Name",
+      dataIndex: "fullName",
+      width: 100,
+    },
+    {
+      title: "Available",
+      dataIndex: "shareCapital",
+      width: 100,
+    },
+  ];
+
+  const fetchCreditsData = async () => {
+    try {
+      const borrowersCollection = collection(FIREBASE_DB, "borrowers");
+      const memberCollection = collection(FIREBASE_DB, "memberRegister");
+      const querySnapshot = await getDocs(borrowersCollection);
+      const memberQuerySnapshot = await getDocs(memberCollection);
+
+      const creditsData = querySnapshot.docs.map((doc) => doc.data());
+      const members = memberQuerySnapshot.docs.map((doc) => doc.data());
+
+      const combined = members.map((member) => {
+        const matchingCredit = creditsData.find(
+          (credit) => credit.accountID === member.accountID
+        );
+        return {
+          ...member,
+          ...matchingCredit,
+        };
+      });
+
+      console.log(combined);
+      setCredits(creditsData);
+      sertMemberName(members);
+      setCombinedData(combined);
+    } catch (error) {
+      console.error("Error fetching credits data:", error);
+    }
+  };
+
+  useEffect(() => {
+    // Fetch the credits data when the component mounts.
+    fetchCreditsData();
+  }, []);
   const onChange = (key) => {
     console.log(key);
   };
@@ -87,7 +84,7 @@ const Members = () => {
       content: (
         <Table
           columns={columnsCredits}
-          dataSource={dataCredits}
+          dataSource={combinedData}
           scroll={{
             y: 400,
           }}
@@ -100,7 +97,7 @@ const Members = () => {
       content: (
         <Table
           columns={columnsShare}
-          dataSource={dataShare}
+          dataSource={combinedData}
           scroll={{
             y: 420,
           }}
@@ -112,7 +109,7 @@ const Members = () => {
   return (
     <>
       <div className="text"> Credits and Share Capital</div>
-      <Tabs defaultActiveKey="1" onChange={onChange}>
+      <Tabs defaultActiveKey="2" onChange={onChange}>
         {items.map((item) => (
           <Tabs.TabPane tab={item.label} key={item.key}>
             {item.content}

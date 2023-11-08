@@ -25,7 +25,6 @@ const Duedate = () => {
   const [due, setDue] = useState([]);
   const [overdue, setOverdue] = useState([]);
   const [allSchedule, setAllSchedule] = useState([{}]);
-  const [allData, setAllData] = useState([]);
   const [isModalOpen, setIsModalOpen] = useState(false); // Set initial state to false
   const [selectedRowData, setSelectedRowData] = useState(null);
   const [isUpdating, setIsUpdating] = useState(false);
@@ -33,6 +32,39 @@ const Duedate = () => {
   useEffect(() => {
     fetchFirestoreData();
   }, []);
+
+  const Message = {
+    sound: "default",
+    title: "Payment Schedule Status",
+    body: "Your payment has been acknowledged! Check your app to see balances and updates.",
+  };
+
+  const sendNotif = async (expoToken) => {
+    Message.to = expoToken;
+    await fetch("https://exp.host/--/api/v2/push/send", {
+      mode: "no-cors",
+      method: "POST",
+      headers: {
+        Accept: "application/json",
+        "Accept-encoding": "gzip, deflate",
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify(Message),
+    });
+  };
+
+  // const acknowledge = async (token, docId) => {
+  //   try {
+  //       message.success("Payment successfully acknowledged!");
+  //     try {
+
+  //     } catch (error) {
+  //         message.error("Error Acknowledging the Payments");
+  //     }
+  //   } catch (error) {
+  //     console.log("Error updating doc: " + error);
+  //   }
+  // };
 
   const fetchFirestoreData = async () => {
     setIsUpdating(true);
@@ -84,7 +116,7 @@ const Duedate = () => {
   };
 
   // mark as paid the daily payment schedule for testing purposes
-  const updateScheduleStatus = async (accountID) => {
+  const updateScheduleStatus = async (accountID, tokenID) => {
     const borrowerID = accountID;
     const borrowerRef = doc(FIREBASE_DB, "borrowers", borrowerID);
     const scheduleRef = collection(borrowerRef, "paymentSchedule");
@@ -150,6 +182,11 @@ const Duedate = () => {
         });
       }
       message.success("Successfully changed status.");
+      try {
+        await sendNotif(tokenID);
+      } catch (error) {
+        message.error("Error Acknowledging the Payments");
+      }
       fetchFirestoreData();
 
       /* const dateToday = new Date();
@@ -201,7 +238,12 @@ const Duedate = () => {
         <Popconfirm
           title="Confirm"
           description="Are you sure you want to mark this as paid?"
-          onConfirm={() => updateScheduleStatus(selectedRowData.accountID)}
+          onConfirm={() =>
+            updateScheduleStatus(
+              selectedRowData.accountID,
+              selectedRowData.tokenID
+            )
+          }
           onOpenChange={() => console.log("open change")}
           okButtonProps={{ style: { backgroundColor: "#57708c" } }}
           disabled={record.status === "complete"}
@@ -231,6 +273,7 @@ const Duedate = () => {
             )}
           </Button>
         </Popconfirm>
+
         /*    <Button
           type="default"
           onClick={() => handleShow(record)}
