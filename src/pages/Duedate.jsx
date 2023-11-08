@@ -66,6 +66,14 @@ const Duedate = () => {
   //   }
   // };
 
+  const now = new Date();
+  const getCurrentDate = () => {
+    const year = now.getFullYear();
+    const month = now.getMonth() + 1; // Months are zero-based (0 = January, 11 = December)
+    const day = now.getDate();
+    return `${month}/${day}/${year}`;
+  };
+
   const fetchFirestoreData = async () => {
     setIsUpdating(true);
     const borrowersCollection = collection(FIREBASE_DB, "borrowers");
@@ -124,6 +132,9 @@ const Duedate = () => {
     try {
       const borrowerSnapshot = await getDoc(borrowerRef);
       const querySchedSnapshot = await getDocs(scheduleRef);
+      const borrowerData = borrowerSnapshot.data();
+      const borrowerCreditHistory = borrowerData.creditScoreHistorry || [];
+      const creditDate = getCurrentDate();
 
       if (borrowerSnapshot.exists()) {
         const loanRef = collection(borrowerRef, "loanRequests");
@@ -152,6 +163,15 @@ const Duedate = () => {
             }
           }
 
+          const newCreditHistoryItem = {
+            amount: updateCreditScore,
+            date: creditDate,
+          };
+
+          const updatedCreditHistory = [
+            ...borrowerCreditHistory,
+            newCreditHistoryItem,
+          ];
           querySchedSnapshot.forEach(async (schedDoc) => {
             const sched = schedDoc.data();
             const schedIdRef = doc(scheduleRef, schedDoc.id); // Use schedDoc.id to get the document ID
@@ -173,6 +193,10 @@ const Duedate = () => {
                   });
                   await updateDoc(borrowerRef, {
                     creditScore: updateCreditScore,
+                  });
+                  await updateDoc(borrowerRef, {
+                    creditScore: updateCreditScore,
+                    creditScoreHistory: updatedCreditHistory,
                   });
                   break;
                 }
