@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { Bar } from "react-chartjs-2";
 import { Spin } from "antd";
-import Box from "../components/box/Box";
+// import Box from "../components/box/Box";
 import { Icon } from "@iconify/react";
 import DashboardWrapper, {
   DashboardWrapperMain,
@@ -69,10 +69,10 @@ const Dashboard = () => {
         value: totalRevenueSum,
       },
       {
-        title: "Non Payee",
-        subtitle: "Non paying members",
+        title: "Non Payee/ Unpaid",
+        subtitle: "List/s",
         icon: <i className="bx bx-user-x" style={{ fontSize: 38 }}></i>,
-        value: 2,
+        value: activeLoanSum.length,
       },
     ],
     overall: [

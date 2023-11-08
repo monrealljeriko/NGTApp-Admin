@@ -164,7 +164,7 @@ const Members = () => {
             key: item.registerID,
           }))}
           scroll={{
-            y: 350,
+            y: 340,
           }}
         />
       ),
@@ -191,7 +191,7 @@ const Members = () => {
             key: item.registerID,
           }))}
           scroll={{
-            y: 350,
+            y: 340,
           }}
         />
       ),
@@ -218,7 +218,7 @@ const Members = () => {
             key: item.registerID,
           }))}
           scroll={{
-            y: 350,
+            y: 340,
           }}
         />
       ),

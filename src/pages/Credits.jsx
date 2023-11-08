@@ -1,11 +1,9 @@
 import React, { useEffect, useState } from "react";
-import { Tabs, Table, Space } from "antd";
+import { Tabs, Table } from "antd";
 import { FIREBASE_DB } from "../configs/firebaseConfig";
-import { collection, getDocs, query, where } from "firebase/firestore";
+import { collection, getDocs } from "firebase/firestore";
 
 const Members = () => {
-  const [credits, setCredits] = useState([]);
-  const [memberName, sertMemberName] = useState([]);
   const [combinedData, setCombinedData] = useState([]);
   const columnsCredits = [
     {
@@ -59,10 +57,6 @@ const Members = () => {
           ...matchingCredit,
         };
       });
-
-      console.log(combined);
-      setCredits(creditsData);
-      sertMemberName(members);
       setCombinedData(combined);
     } catch (error) {
       console.error("Error fetching credits data:", error);
