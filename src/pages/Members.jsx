@@ -3,6 +3,7 @@ import { Tabs, Table, Button, Modal, List, message, Spin } from "antd";
 import { collection, getDocs, doc, updateDoc } from "firebase/firestore";
 import { ReloadOutlined } from "@ant-design/icons";
 import { FIREBASE_DB } from "../configs/firebaseConfig";
+import { SearchOutlined } from "@ant-design/icons";
 
 const Members = () => {
   const [pendingData, setPendingData] = useState([]);
@@ -55,7 +56,15 @@ const Members = () => {
       key: "operation",
       width: 150,
       render: (record) => (
-        <Button type="link" onClick={() => handleShow(record)}>
+        <Button
+          type="link"
+          onClick={() => handleShow(record)}
+          style={{
+            backgroundColor: "#57708c",
+            color: "white",
+          }}
+        >
+          <SearchOutlined style={{ backgroundColor: "#57708c" }} />
           View Details
         </Button>
       ),

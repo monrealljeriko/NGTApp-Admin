@@ -12,6 +12,7 @@ import Credits from "./pages/Credits";
 import History from "./pages/History";
 import Settings from "./pages/Settings";
 import Login from "./pages/Login";
+import Checklist from "./pages/Checklists";
 import MainLayout from "./layout/MainLayout";
 import { FIREBASE_AUTH, FIREBASE_DB } from "./configs/firebaseConfig";
 import { onAuthStateChanged } from "firebase/auth";
@@ -83,6 +84,7 @@ function App() {
             <Route path="credits" element={<Credits />} />
             <Route path="history" element={<History />} />
             <Route path="settings" element={<Settings />} />
+            <Route path="checklist" element={<Checklist />} />
           </Route>
         </Routes>
       ) : (

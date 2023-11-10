@@ -14,6 +14,12 @@ const sidebarNav = [
     text: "Members",
   },
   {
+    link: "/checklist",
+    section: "checklist",
+    icon: <Icon icon="tabler:checklist" style={{ fontSize: 35 }} />,
+    text: "Checklist",
+  },
+  {
     link: "/loans",
     section: "loans",
     icon: <i className="bx bx-collection"></i>,
@@ -22,11 +28,7 @@ const sidebarNav = [
   {
     link: "/duedate",
     section: "duedate",
-    icon: (
-      <Icon icon="tabler:calendar" style={{ fontSize: 35 }}>
-        {" "}
-      </Icon>
-    ),
+    icon: <Icon icon="tabler:calendar" style={{ fontSize: 35 }}></Icon>,
     text: "Duedates",
   },
   {

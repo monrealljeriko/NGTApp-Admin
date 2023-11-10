@@ -11,6 +11,7 @@ import {
   updateDoc,
 } from "firebase/firestore";
 import { FIREBASE_DB } from "../configs/firebaseConfig";
+import { SearchOutlined } from "@ant-design/icons";
 
 const Loans = () => {
   const [pendingData, setPendingData] = useState([]);
@@ -68,7 +69,15 @@ const Loans = () => {
       key: "operation",
       width: 150,
       render: (record) => (
-        <Button type="link" onClick={() => handleShow(record)}>
+        <Button
+          type="link"
+          onClick={() => handleShow(record)}
+          style={{
+            backgroundColor: "#57708c",
+            color: "white",
+          }}
+        >
+          <SearchOutlined style={{ backgroundColor: "#57708c" }} />
           View Details
         </Button>
       ),
