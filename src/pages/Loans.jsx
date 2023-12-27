@@ -1,5 +1,14 @@
 import React, { useEffect, useState } from "react";
-import { Tabs, Table, Button, Modal, List, message, Spin } from "antd";
+import {
+  Tabs,
+  Table,
+  Button,
+  Modal,
+  List,
+  message,
+  Spin,
+  Popconfirm,
+} from "antd";
 import { ReloadOutlined } from "@ant-design/icons";
 
 import {
@@ -11,15 +20,24 @@ import {
   updateDoc,
 } from "firebase/firestore";
 import { FIREBASE_DB } from "../configs/firebaseConfig";
-import { SearchOutlined } from "@ant-design/icons";
+import {
+  SearchOutlined,
+  CheckCircleOutlined,
+  CloseOutlined,
+  EditOutlined,
+} from "@ant-design/icons";
 
 const Loans = () => {
   const [pendingData, setPendingData] = useState([]);
   const [activeData, setActiveData] = useState([]);
   const [completedData, setCompletedData] = useState([]);
   const [allData, setAllData] = useState([]);
+  const [combinedData, setCombinedData] = useState([]);
   const [isModalOpen, setIsModalOpen] = useState(false); // Set initial state to false
+  const [isModalOpenChecklist, setIsModalOpenChecklist] = useState(false); // Set initial state to false
   const [selectedRowData, setSelectedRowData] = useState(null);
+  const [selectedRowDataChecklist, setSelectedRowDataChecklist] =
+    useState(null);
   const [isUpdating, setIsUpdating] = useState(false);
 
   useEffect(() => {
@@ -35,7 +53,7 @@ const Loans = () => {
     {
       title: "Name",
       dataIndex: "name",
-      width: 180,
+      width: 120,
     },
     {
       title: "Amount",
@@ -47,16 +65,16 @@ const Loans = () => {
       dataIndex: "interestRate",
       width: 100,
     },
-    {
-      title: "Term",
-      dataIndex: "terms",
-      width: 100,
-    },
-    {
-      title: "Number of Payments",
-      dataIndex: "numberOfPayments",
-      width: 180,
-    },
+    // {
+    //   title: "Term",
+    //   dataIndex: "terms",
+    //   width: 100,
+    // },
+    // {
+    //   title: "Number of Payments",
+    //   dataIndex: "numberOfPayments",
+    //   width: 180,
+    // },
 
     {
       title: "Status",
@@ -67,31 +85,125 @@ const Loans = () => {
     {
       title: "Action",
       key: "operation",
-      width: 150,
+      width: 200,
       render: (record) => (
-        <Button
-          type="link"
-          onClick={() => handleShow(record)}
-          style={{
-            backgroundColor: "#57708c",
-            color: "white",
-          }}
-        >
-          <SearchOutlined style={{ backgroundColor: "#57708c" }} />
-          View Details
-        </Button>
+        <div style={{ display: "flex", flexDirection: "row", gap: 5 }}>
+          <Button
+            type="link"
+            onClick={() => handleShow(record)}
+            style={{
+              backgroundColor: "#57708c",
+              color: "white",
+            }}
+          >
+            <SearchOutlined style={{ backgroundColor: "#57708c" }} />
+            Details
+          </Button>
+          <Button
+            type="link"
+            onClick={() => handleShowChecklist(record)}
+            style={{
+              borderColor: "#57708c",
+              color: "#57708c",
+            }}
+          >
+            <SearchOutlined style={{ color: "#57708c" }} />
+            Checklist
+          </Button>
+        </div>
       ),
     },
   ];
+
+  const updateChecklists = async (accountID, check) => {
+    const borrowerID = accountID;
+    const memberIdDocRef = doc(FIREBASE_DB, "memberRegister", accountID);
+
+    try {
+      switch (check) {
+        case "check1":
+          await updateDoc(memberIdDocRef, {
+            checkList1: true,
+          });
+          break;
+        case "check2":
+          await updateDoc(memberIdDocRef, {
+            checkList2: true,
+          });
+          break;
+        case "check3":
+          await updateDoc(memberIdDocRef, {
+            checkList3: true,
+          });
+          break;
+        case "check4":
+          await updateDoc(memberIdDocRef, {
+            checkList4: true,
+          });
+          break;
+        case "check5":
+          await updateDoc(memberIdDocRef, {
+            checkList5: true,
+          });
+          break;
+        case "check6":
+          await updateDoc(memberIdDocRef, {
+            checkList6: true,
+          });
+          break;
+        case "check7":
+          await updateDoc(memberIdDocRef, {
+            checkList7: true,
+          });
+          break;
+        case "check8":
+          await updateDoc(memberIdDocRef, {
+            checkList8: true,
+          });
+          break;
+        default:
+          break;
+      }
+
+      message.success("Status successfully updated");
+    } catch (e) {
+      message.error("Failed updating status");
+    }
+  };
 
   const handleShow = (rowData) => {
     setSelectedRowData(rowData); // Set the selected row data
     setIsModalOpen(true);
   };
 
+  const handleShowChecklist = (rowData) => {
+    setSelectedRowDataChecklist(rowData); // Set the selected row data
+    setIsModalOpenChecklist(true);
+  };
+
   const fetchFirestoreData = async () => {
     setIsUpdating(true);
     const borrowersCollection = collection(FIREBASE_DB, "borrowers");
+    const memberCollection = collection(FIREBASE_DB, "memberRegister");
+
+    const querySnapshot = await getDocs(borrowersCollection);
+    const memberQuerySnapshot = await getDocs(memberCollection);
+
+    const borrowersData = querySnapshot.docs.map((doc) => doc.data());
+    const members = memberQuerySnapshot.docs.map((doc) => doc.data());
+
+    const combined = members.map((member) => {
+      const matchingBorrower = borrowersData.find(
+        (borrow) => borrow.accountID === member.accountID
+      );
+      return {
+        ...member,
+        ...matchingBorrower,
+      };
+    });
+
+    setCombinedData(combined);
+    // console.log(combined);
 
     try {
       const querySnapshot = await getDocs(borrowersCollection);
@@ -123,10 +235,95 @@ const Loans = () => {
       const completed = borrowerDataLoan.filter(
         (item) => item.status === "Completed"
       );
-      setPendingData(pending);
-      setActiveData(active);
-      setCompletedData(completed);
-      setAllData(borrowerDataLoan);
+
+      const combinedPending = pending.map((member) => {
+        // Find a member with the same accountID in the members array
+        const matchingBorrower = members.find(
+          (borrow) => borrow.accountID === member.accountID
+        );
+
+        // Combine properties from both member and matchingBorrower
+        return {
+          ...member, // Spread properties from borrowerDataLoan
+          checkList1: matchingBorrower?.checkList1 || member.checkList1, // Add specific property from member
+          checkList2: matchingBorrower?.checkList2 || member.checkList2,
+          checkList3: matchingBorrower?.checkList3 || member.checkList3, // Add specific property from member
+          checkList4: matchingBorrower?.checkList4 || member.checkList4,
+          checkList5: matchingBorrower?.checkList5 || member.checkList5, // Add specific property from member
+          checkList6: matchingBorrower?.checkList6 || member.checkList6,
+          checkList7: matchingBorrower?.checkList7 || member.checkList7, // Add specific property from member
+          checkList8: matchingBorrower?.checkList8 || member.checkList8,
+        };
+      });
+      console.log("Pending Data", combinedPending);
+
+      const combinedActive = active.map((member) => {
+        // Find a member with the same accountID in the members array
+        const matchingBorrower = members.find(
+          (borrow) => borrow.accountID === member.accountID
+        );
+
+        // Combine properties from both member and matchingBorrower
+        return {
+          ...member, // Spread properties from borrowerDataLoan
+          checkList1: matchingBorrower?.checkList1 || member.checkList1, // Add specific property from member
+          checkList2: matchingBorrower?.checkList2 || member.checkList2,
+          checkList3: matchingBorrower?.checkList3 || member.checkList3, // Add specific property from member
+          checkList4: matchingBorrower?.checkList4 || member.checkList4,
+          checkList5: matchingBorrower?.checkList5 || member.checkList5, // Add specific property from member
+          checkList6: matchingBorrower?.checkList6 || member.checkList6,
+          checkList7: matchingBorrower?.checkList7 || member.checkList7, // Add specific property from member
+          checkList8: matchingBorrower?.checkList8 || member.checkList8,
+        };
+      });
+      console.log("Active Data", combinedActive);
+
+      const combinedCompleted = completed.map((member) => {
+        // Find a member with the same accountID in the members array
+        const matchingBorrower = members.find(
+          (borrow) => borrow.accountID === member.accountID
+        );
+
+        // Combine properties from both member and matchingBorrower
+        return {
+          ...member, // Spread properties from borrowerDataLoan
+          checkList1: matchingBorrower?.checkList1 || member.checkList1, // Add specific property from member
+          checkList2: matchingBorrower?.checkList2 || member.checkList2,
+          checkList3: matchingBorrower?.checkList3 || member.checkList3, // Add specific property from member
+          checkList4: matchingBorrower?.checkList4 || member.checkList4,
+          checkList5: matchingBorrower?.checkList5 || member.checkList5, // Add specific property from member
+          checkList6: matchingBorrower?.checkList6 || member.checkList6,
+          checkList7: matchingBorrower?.checkList7 || member.checkList7, // Add specific property from member
+          checkList8: matchingBorrower?.checkList8 || member.checkList8,
+        };
+      });
+      console.log("Completed Data", combinedCompleted);
+
+      const combinedAllData = borrowerDataLoan.map((member) => {
+        // Find a member with the same accountID in the members array
+        const matchingBorrower = members.find(
+          (borrow) => borrow.accountID === member.accountID
+        );
+
+        // Combine properties from both member and matchingBorrower
+        return {
+          ...member, // Spread properties from borrowerDataLoan
+          checkList1: matchingBorrower?.checkList1 || member.checkList1, // Add specific property from member
+          checkList2: matchingBorrower?.checkList2 || member.checkList2,
+          checkList3: matchingBorrower?.checkList3 || member.checkList3, // Add specific property from member
+          checkList4: matchingBorrower?.checkList4 || member.checkList4,
+          checkList5: matchingBorrower?.checkList5 || member.checkList5, // Add specific property from member
+          checkList6: matchingBorrower?.checkList6 || member.checkList6,
+          checkList7: matchingBorrower?.checkList7 || member.checkList7, // Add specific property from member
+          checkList8: matchingBorrower?.checkList8 || member.checkList8,
+        };
+      });
+      console.log("All data", combinedAllData);
+
+      setPendingData(combinedPending);
+      setActiveData(combinedActive);
+      setCompletedData(combinedCompleted);
+      setAllData(combinedAllData);
       setIsUpdating(false);
     } catch (error) {
       console.error("Error querying the borrowers collection: ", error);
@@ -144,7 +341,7 @@ const Loans = () => {
   const Message = {
     sound: "default",
     title: "Loan Status",
-    body: "Your loan has been approved! Check your app to see your schedyu.",
+    body: "Your loan has been approved! Check your app to see your schedule.",
   };
 
   const sendNotif = async (expoToken) => {
@@ -180,7 +377,7 @@ const Loans = () => {
     const borrowerData = borrowerSnapshot.data();
     const shareCapitalData = shareSnapshot.data();
 
-    const borrowerShareCapital = shareCapitalData.shareCapital || 0; // Initialize as 0 if it doesn't exist yet
+    const borrowerShareCapital = borrowerData.shareCapital || 0; // Initialize as 0 if it doesn't exist yet
     const newShareCapital =
       borrowerShareCapital + shareCapitalData.shareCapitalAmount;
 
@@ -221,15 +418,13 @@ const Loans = () => {
     }
   };
 
-  const handleOk = (accID, loanID, tokenID) => {
-    const borrowerId = accID;
-    const loanRequestId = loanID;
-    const tokenRequestId = tokenID;
-    updateLoanStatusToActive(borrowerId, loanRequestId, tokenRequestId);
+  const handleOk = () => {
+    setIsModalOpenChecklist(false);
   };
 
   const handleCancel = () => {
     setIsModalOpen(false);
+    setIsModalOpenChecklist(false);
   };
   const items = [
     {
@@ -440,7 +635,249 @@ const Loans = () => {
           )}
         </Modal>
       )}
+      {selectedRowDataChecklist && (
+        <Modal
+          title="Check Lists"
+          open={isModalOpenChecklist}
+          onOk={handleOk}
+          onCancel={handleCancel}
+          cancelText="Done"
+          okButtonProps={{
+            style: { display: "none" },
+          }}
+          width={450}
+          centered
+        >
+          <div style={{ display: "flex", flexDirection: "row" }}>
+            <div style={{ flex: 1, marginRight: 40 }}>
+              <List>
+                <div
+                  style={{
+                    display: "flex",
+                    flexDirection: "row",
+                    justifyContent: "space-between",
+                  }}
+                >
+                  <>
+                    <div>
+                      {selectedRowDataChecklist.checkList1 ? (
+                        <List.Item>
+                          <CheckCircleOutlined
+                            style={{ marginRight: 10, color: "green" }}
+                          />
+                          Application Form
+                        </List.Item>
+                      ) : (
+                        <List.Item>
+                          <CloseOutlined
+                            style={{ marginRight: 10, color: "red" }}
+                          />
+                          Application Form
+                        </List.Item>
+                      )}
+                    </div>
+                  </>
+                </div>
+              </List>
 
+              {/* item2 */}
+              <List>
+                <div
+                  style={{
+                    display: "flex",
+                    flexDirection: "row",
+                    justifyContent: "space-between",
+                  }}
+                >
+                  <div>
+                    {selectedRowDataChecklist.checkList2 ? (
+                      <List.Item>
+                        <CheckCircleOutlined
+                          style={{ marginRight: 10, color: "green" }}
+                        />
+                        Barangay Clearance
+                      </List.Item>
+                    ) : (
+                      <List.Item>
+                        <CloseOutlined
+                          style={{ marginRight: 10, color: "red" }}
+                        />
+                        Barangay Clearance
+                      </List.Item>
+                    )}
+                  </div>
+                </div>
+              </List>
+
+              {/* item 3 */}
+              <List>
+                <div
+                  style={{
+                    display: "flex",
+                    flexDirection: "row",
+                    justifyContent: "space-between",
+                  }}
+                >
+                  <div>
+                    {selectedRowDataChecklist.checkList3 ? (
+                      <List.Item>
+                        <CheckCircleOutlined
+                          style={{ marginRight: 10, color: "green" }}
+                        />
+                        2x2 ID Picture
+                      </List.Item>
+                    ) : (
+                      <List.Item>
+                        <CloseOutlined
+                          style={{ marginRight: 10, color: "red" }}
+                        />
+                        2x2 ID Picture
+                      </List.Item>
+                    )}
+                  </div>
+                </div>
+              </List>
+
+              {/* item 4 */}
+              <List>
+                <div
+                  style={{
+                    display: "flex",
+                    flexDirection: "row",
+                    justifyContent: "space-between",
+                  }}
+                >
+                  <div>
+                    {selectedRowDataChecklist.checkList4 ? (
+                      <List.Item>
+                        <CheckCircleOutlined
+                          style={{ marginRight: 10, color: "green" }}
+                        />
+                        1x1 ID Picture
+                      </List.Item>
+                    ) : (
+                      <List.Item>
+                        <CloseOutlined
+                          style={{ marginRight: 10, color: "red" }}
+                        />
+                        1x1 ID Picture
+                      </List.Item>
+                    )}
+                  </div>
+                </div>
+              </List>
+              <List>
+                <div
+                  style={{
+                    display: "flex",
+                    flexDirection: "row",
+                    justifyContent: "space-between",
+                  }}
+                >
+                  <div>
+                    {selectedRowDataChecklist.checkList5 ? (
+                      <List.Item>
+                        <CheckCircleOutlined
+                          style={{ marginRight: 10, color: "green" }}
+                        />
+                        Seminar
+                      </List.Item>
+                    ) : (
+                      <List.Item>
+                        <CloseOutlined
+                          style={{ marginRight: 10, color: "red" }}
+                        />
+                        Seminar
+                      </List.Item>
+                    )}
+                  </div>
+                </div>
+              </List>
+              <List>
+                <div
+                  style={{
+                    display: "flex",
+                    flexDirection: "row",
+                    justifyContent: "space-between",
+                  }}
+                >
+                  <div>
+                    {selectedRowDataChecklist.checkList6 ? (
+                      <List.Item>
+                        <CheckCircleOutlined
+                          style={{ marginRight: 10, color: "green" }}
+                        />
+                        Credit Investigation Interview
+                      </List.Item>
+                    ) : (
+                      <List.Item>
+                        <CloseOutlined
+                          style={{ marginRight: 10, color: "red" }}
+                        />
+                        Credit Investigation Interview
+                      </List.Item>
+                    )}
+                  </div>
+                </div>
+              </List>
+              <List>
+                <div
+                  style={{
+                    display: "flex",
+                    flexDirection: "row",
+                    justifyContent: "space-between",
+                  }}
+                >
+                  <div>
+                    {selectedRowDataChecklist.checkList7 ? (
+                      <List.Item>
+                        <CheckCircleOutlined
+                          style={{ marginRight: 10, color: "green" }}
+                        />
+                        Copy of Identintification Card
+                      </List.Item>
+                    ) : (
+                      <List.Item>
+                        <CloseOutlined
+                          style={{ marginRight: 10, color: "red" }}
+                        />
+                        Copy of Identintification Card
+                      </List.Item>
+                    )}
+                  </div>
+                </div>
+              </List>
+              <List>
+                <div
+                  style={{
+                    display: "flex",
+                    flexDirection: "row",
+                    justifyContent: "space-between",
+                  }}
+                >
+                  <div>
+                    {selectedRowDataChecklist.checkList8 ? (
+                      <List.Item>
+                        <CheckCircleOutlined
+                          style={{ marginRight: 10, color: "green" }}
+                        />
+                        Copy of Scanned Documents
+                      </List.Item>
+                    ) : (
+                      <List.Item>
+                        <CloseOutlined
+                          style={{ marginRight: 10, color: "red" }}
+                        />
+                        Copy of Scanned Documents
+                      </List.Item>
+                    )}
+                  </div>
+                </div>
+              </List>
+            </div>
+          </div>
+        </Modal>
+      )}
       <div
         style={{
           display: "flex",

@@ -42,12 +42,12 @@ const Members = () => {
       key: "5",
       title: "Contact",
       dataIndex: "contactNumber",
-      width: 100,
+      width: 120,
     },
     {
       key: "6",
       title: "Status",
-      dataIndex: "status",
+      dataIndex: "memberStatus",
       width: 100,
     },
 
@@ -65,7 +65,7 @@ const Members = () => {
           }}
         >
           <SearchOutlined style={{ backgroundColor: "#57708c" }} />
-          View Details
+          Details
         </Button>
       ),
     },
@@ -86,8 +86,8 @@ const Members = () => {
       });
 
       // Filter data into pending, members, and all categories
-      const pending = data.filter((item) => item.status === "Pending");
-      const members = data.filter((item) => item.status === "Member");
+      const pending = data.filter((item) => item.memberStatus === "Pending");
+      const members = data.filter((item) => item.memberStatus === "Member");
 
       setPendingData(pending);
       setMembersData(members);
@@ -129,7 +129,7 @@ const Members = () => {
     const memberRef = doc(db, `memberRegister/${memberId}`);
 
     try {
-      await updateDoc(memberRef, { status: "Member" });
+      await updateDoc(memberRef, { memberStatus: "Member" });
       setIsUpdating(false);
       message.success(
         `Member with ID ${memberId} has been successfully approved.`
@@ -247,15 +247,18 @@ const Members = () => {
             )
           }
           onCancel={handleCancel}
-          okText={selectedRowData.status === "Member" ? "Member" : "Approve"}
+          okText={
+            selectedRowData.memberStatus === "Member" ? "Member" : "Approve"
+          }
           okButtonProps={{
             style: {
               backgroundColor:
-                selectedRowData.status === "Pending" ? "#57708c" : "",
+                selectedRowData.memberStatus === "Pending" ? "#57708c" : "",
               borderColor:
-                selectedRowData.status === "Pending" ? "#57708c" : "",
+                selectedRowData.memberStatus === "Pending" ? "#57708c" : "",
             },
-            disabled: selectedRowData && selectedRowData.status === "Member",
+            disabled:
+              selectedRowData && selectedRowData.memberStatus === "Member",
           }}
           width={1300}
           centered

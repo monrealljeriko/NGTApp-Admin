@@ -3,6 +3,7 @@ import { ReloadOutlined } from "@ant-design/icons";
 import { Tabs, Table, Button, List, Modal, Spin } from "antd";
 import { collection, query, getDocs } from "firebase/firestore";
 import { FIREBASE_DB } from "../configs/firebaseConfig";
+import { SearchOutlined } from "@ant-design/icons";
 
 const History = () => {
   const [completedData, setCompletedData] = useState([]);
@@ -57,8 +58,16 @@ const History = () => {
       key: "operation",
       width: 150,
       render: (record) => (
-        <Button type="link" onClick={() => handleShow(record)}>
-          View Details
+        <Button
+          type="link"
+          onClick={() => handleShow(record)}
+          style={{
+            backgroundColor: "#57708c",
+            color: "white",
+          }}
+        >
+          <SearchOutlined style={{ backgroundColor: "#57708c" }} />
+          Details
         </Button>
       ),
     },

@@ -62,7 +62,7 @@ const Checklist = () => {
           }}
         >
           <SearchOutlined style={{ backgroundColor: "#57708c" }} />
-          View Checklist
+          Checklist
         </Button>
       ),
     },
@@ -137,7 +137,7 @@ const Checklist = () => {
       });
 
       // Filter data into pending, members, and all categories
-      const members = data.filter((item) => item.status === "Member");
+      const members = data.filter((item) => item.memberStatus === "Member");
 
       setMembersData(members);
     } catch (error) {
